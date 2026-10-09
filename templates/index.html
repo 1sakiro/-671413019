@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI For Thai Services | Tag Suggestion & EmoNews</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-indigo-700 via-blue-600 to-sky-600 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-white/10 backdrop-blur rounded-xl">
+          <svg class="w-7 h-7 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight">AI For Thai Multi-Services</h1>
+          <p class="text-sky-100 text-xs">ระบบประมวลผลข้อความภาษาไทยอัจฉริยะ</p>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <nav class="flex bg-black/20 p-1 rounded-xl backdrop-blur">
+        <button
+          id="tabBtnTag"
+          onclick="switchTab('tag')"
+          class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-sm flex items-center gap-1.5"
+        >
+          <span>🏷️</span>
+          <span>แนะนำป้ายกำกับ (Tag Suggestion)</span>
+        </button>
+        <button
+          id="tabBtnEmo"
+          onclick="switchTab('emo')"
+          class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-1.5"
+        >
+          <span>🎭</span>
+          <span>ทำนายอารมณ์ข่าว (EmoNews)</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+
+    <!-- ================= SERVICE 1: TAG SUGGESTION ================= -->
+    <div id="serviceTagSection" class="transition-opacity duration-300">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <span>🏷️</span> ระบบแนะนำป้ายกำกับที่เหมาะสมกับเนื้อหาบทความ
+        </h2>
+        <p class="text-slate-500 text-sm mt-1">วิเคราะห์เนื้อหาบทความและสร้างแท็กที่เกี่ยวข้องโดยอัตโนมัติ (ไม่เกิน 5,000 ตัวอักษร)</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Input Form -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between mb-3">
+              <label for="inputText" class="font-semibold text-slate-700 flex items-center gap-2">
+                <span>เนื้อหาบทความ / ข้อความ</span>
+                <span class="text-xs font-normal text-rose-500">*จำเป็น</span>
+              </label>
+              <span id="charCount" class="text-xs text-slate-500 font-mono">0 / 5,000 ตัวอักษร</span>
+            </div>
+
+            <textarea
+              id="inputText"
+              rows="7"
+              maxlength="5000"
+              placeholder="พิมพ์หรือวางเนื้อหาบทความที่ต้องการวิเคราะห์แท็กที่นี่..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm leading-relaxed placeholder:text-slate-400 outline-none resize-y"
+            ></textarea>
+
+            <!-- Quick Samples -->
+            <div class="mt-3">
+              <p class="text-xs text-slate-500 mb-2 font-medium">ตัวอย่างข้อความทดสอบ:</p>
+              <div class="flex flex-wrap gap-2">
+                <button 
+                  type="button" 
+                  onclick="setTagSample(1)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2.5 rounded-lg border border-slate-200 transition">
+                  🌱 ข้าวและแป้ง สารอาหาร
+                </button>
+                <button 
+                  type="button" 
+                  onclick="setTagSample(2)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2.5 rounded-lg border border-slate-200 transition">
+                  🏡 ตกแต่งสวนและปลูกต้นไม้
+                </button>
+                <button 
+                  type="button" 
+                  onclick="setTagSample(3)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2.5 rounded-lg border border-slate-200 transition">
+                  💻 ปัญญาประดิษฐ์ (AI)
+                </button>
+              </div>
+            </div>
+
+            <!-- Options -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-slate-100">
+              <div>
+                <label for="numtag" class="block text-xs font-semibold text-slate-600 mb-1">
+                  จำนวนแท็กผลลัพธ์ (numtag)
+                </label>
+                <select id="numtag" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="3">3 แท็ก</option>
+                  <option value="5" selected>5 แท็ก (ค่าเริ่มต้น)</option>
+                  <option value="8">8 แท็ก</option>
+                  <option value="10">10 แท็ก</option>
+                  <option value="15">15 แท็ก</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="tagApiKey" class="block text-xs font-semibold text-slate-600 mb-1">
+                  API Key
+                </label>
+                <input
+                  type="password"
+                  id="tagApiKey"
+                  value="{{ default_api_key }}"
+                  class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="API Key"
+                />
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6">
+              <button
+                id="tagSubmitBtn"
+                onclick="analyzeTags()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-medium py-3 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2"
+              >
+                <span>🚀</span>
+                <span>วิเคราะห์และแนะนำแท็ก</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tag Results -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-h-[380px] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                แท็กที่แนะนำ (Suggested Tags)
+              </h3>
+              <button
+                id="copyAllTagsBtn"
+                onclick="copyAllTags()"
+                style="display: none;"
+                class="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                คัดลอกทั้งหมด
+              </button>
+            </div>
+
+            <div id="tagPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
+              <div class="p-4 bg-slate-50 rounded-full mb-3 text-slate-300">🏷️</div>
+              <p class="text-sm font-medium">ยังไม่มีผลลัพธ์การวิเคราะห์</p>
+              <p class="text-xs mt-1">กรอกเนื้อหาด้านซ้ายแล้วกดปุ่ม "วิเคราะห์และแนะนำแท็ก"</p>
+            </div>
+
+            <div id="tagLoading" class="hidden flex-1 flex flex-col items-center justify-center p-6">
+              <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+              <p class="text-sm text-slate-600">กำลังประมวลผลคำแนะนำแท็ก...</p>
+            </div>
+
+            <div id="tagError" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm mb-4">
+              <span id="tagErrorMessage">เกิดข้อผิดพลาด</span>
+            </div>
+
+            <div id="tagResultsView" class="hidden space-y-3 flex-1">
+              <div id="tagsContainer" class="space-y-2.5"></div>
+              <div class="mt-6 pt-4 border-t border-slate-100">
+                <button onclick="toggleJson('tagJsonViewer', 'tagJsonIcon')" class="text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center justify-between w-full">
+                  <span>ผลลัพธ์ JSON ดิบ</span>
+                  <span id="tagJsonIcon">▼</span>
+                </button>
+                <pre id="tagJsonViewer" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 text-xs rounded-lg overflow-x-auto max-h-48 font-mono"></pre>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= SERVICE 2: EMONEWS ================= -->
+    <div id="serviceEmoSection" class="hidden transition-opacity duration-300">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <span>🎭</span> EmoNews: บริการทำนายอารมณ์ของผู้อ่านจากหัวข้อข่าว
+        </h2>
+        <p class="text-slate-500 text-sm mt-1">วิเคราะห์และทำนายอารมณ์ 7 กลุ่ม (fastText): Surprise, Neutral, Sadness, Pleasant, Fear, Anger, Joy</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Input Form -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="mb-3">
+              <label for="emoInputText" class="font-semibold text-slate-700 flex items-center gap-2">
+                <span>หัวข้อข่าวที่ต้องการวิเคราะห์</span>
+                <span class="text-xs font-normal text-rose-500">*จำเป็น</span>
+              </label>
+            </div>
+
+            <textarea
+              id="emoInputText"
+              rows="4"
+              placeholder="ระบุหัวข้อข่าว เช่น นักวิจัยออสเตรเลียเผยสาเหตุฉลามโจมตีมนุษย์..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-sm leading-relaxed placeholder:text-slate-400 outline-none resize-y"
+            ></textarea>
+
+            <!-- Quick Samples -->
+            <div class="mt-3">
+              <p class="text-xs text-slate-500 mb-2 font-medium">ตัวอย่างหัวข้อข่าวทดสอบ:</p>
+              <div class="flex flex-wrap gap-2">
+                <button 
+                  type="button" 
+                  onclick="setEmoSample(1)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2.5 rounded-lg border border-slate-200 transition">
+                  🦈 ฉลามโจมตีมนุษย์ (Surprise/Fear)
+                </button>
+                <button 
+                  type="button" 
+                  onclick="setEmoSample(2)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2.5 rounded-lg border border-slate-200 transition">
+                  ⚽ ทีมชาติไทยคว้าแชมป์ (Joy)
+                </button>
+                <button 
+                  type="button" 
+                  onclick="setEmoSample(3)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2.5 rounded-lg border border-slate-200 transition">
+                  📉 ข้าวของแพง ราคาน้ำมันพุ่ง (Sadness/Anger)
+                </button>
+                <button 
+                  type="button" 
+                  onclick="setEmoSample(4)" 
+                  class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2.5 rounded-lg border border-slate-200 transition">
+                  🌧️ พายุถล่มน้ำท่วมฉับพลัน (Fear)
+                </button>
+              </div>
+            </div>
+
+            <!-- Options -->
+            <div class="mt-6 pt-6 border-t border-slate-100">
+              <label for="emoApiKey" class="block text-xs font-semibold text-slate-600 mb-1">
+                API Key
+              </label>
+              <input
+                type="password"
+                id="emoApiKey"
+                value="{{ default_api_key }}"
+                class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="API Key"
+              />
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6">
+              <button
+                id="emoSubmitBtn"
+                onclick="analyzeEmotion()"
+                class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:scale-[0.99] text-white font-medium py-3 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2"
+              >
+                <span>🔮</span>
+                <span>ทำนายอารมณ์ของผู้อ่าน (Predict Emotion)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emotion Results -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-h-[380px] flex flex-col">
+            <div class="pb-3 border-b border-slate-100 mb-4">
+              <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                ผลการทำนายอารมณ์ (Emotion Prediction)
+              </h3>
+            </div>
+
+            <div id="emoPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
+              <div class="p-4 bg-slate-50 rounded-full mb-3 text-slate-300 text-2xl">🎭</div>
+              <p class="text-sm font-medium">ยังไม่มีผลการทำนาย</p>
+              <p class="text-xs mt-1">ใส่หัวข้อข่าวด้านซ้ายแล้วกดปุ่ม "ทำนายอารมณ์ของผู้อ่าน"</p>
+            </div>
+
+            <div id="emoLoading" class="hidden flex-1 flex flex-col items-center justify-center p-6">
+              <div class="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-3"></div>
+              <p class="text-sm text-slate-600">กำลังวิเคราะห์อารมณ์จากหัวข้อข่าว...</p>
+            </div>
+
+            <div id="emoError" class="hidden p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm mb-4">
+              <span id="emoErrorMessage">เกิดข้อผิดพลาด</span>
+            </div>
+
+            <div id="emoResultsView" class="hidden space-y-4 flex-1">
+              <!-- Top Dominant Emotion Card -->
+              <div id="dominantEmotionBox" class="p-4 rounded-xl border border-purple-200 bg-purple-50/60 flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-semibold text-purple-700 uppercase tracking-wide">อารมณ์เด่นที่สุด</span>
+                  <div id="dominantEmotionName" class="text-lg font-bold text-slate-800 mt-0.5"></div>
+                </div>
+                <div id="dominantEmotionScore" class="text-2xl font-black text-purple-700"></div>
+              </div>
+
+              <!-- All 7 Emotions Breakdown -->
+              <div class="space-y-2.5" id="emotionsContainer">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Raw JSON Toggle -->
+              <div class="mt-6 pt-4 border-t border-slate-100">
+                <button onclick="toggleJson('emoJsonViewer', 'emoJsonIcon')" class="text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center justify-between w-full">
+                  <span>ผลลัพธ์ JSON ดิบ</span>
+                  <span id="emoJsonIcon">▼</span>
+                </button>
+                <pre id="emoJsonViewer" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 text-xs rounded-lg overflow-x-auto max-h-48 font-mono"></pre>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    ขับเคลื่อนด้วย <a href="https://api.aiforthai.in.th" target="_blank" class="text-indigo-600 hover:underline">AI For Thai</a> (Tag Suggestion & EmoNews API) &bull; พัฒนาด้วย Python Flask
+  </footer>
+
+  <script>
+    // Tab Switching Logic
+    function switchTab(tab) {
+      const tagSection = document.getElementById("serviceTagSection");
+      const emoSection = document.getElementById("serviceEmoSection");
+      const tagBtn = document.getElementById("tabBtnTag");
+      const emoBtn = document.getElementById("tabBtnEmo");
+
+      if (tab === 'tag') {
+        tagSection.classList.remove("hidden");
+        emoSection.classList.add("hidden");
+        tagBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-sm flex items-center gap-1.5";
+        emoBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-1.5";
+      } else {
+        tagSection.classList.add("hidden");
+        emoSection.classList.remove("hidden");
+        emoBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-white text-purple-700 shadow-sm flex items-center gap-1.5";
+        tagBtn.className = "px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-1.5";
+      }
+    }
+
+    // ================= SERVICE 1: TAG SUGGESTION =================
+    const tagSamples = {
+      1: "ข้าวและแป้งมีสารอาหารหลักคือคาร์โบไฮเดรต ซึ่งเป็นแหล่งพลังงานหลักที่ร่างกายต้องการในการทำกิจกรรมต่างๆ ในชีวิตประจำวัน",
+      2: "การจัดสวนและการดูแลต้นไม้ช่วยเพิ่มความร่มรื่นและสร้างบรรยากาศที่น่าอยู่ให้กับบ้าน โดยการเลือกดอกไม้และพรรณไม้ที่เหมาะสมกับสภาพอากาศ",
+      3: "ปัญญาประดิษฐ์หรือ AI กำลังเข้ามามีบทบาทสำคัญในการขับเคลื่อนเทคโนโลยี การวิเคราะห์ข้อมูลขนาดใหญ่ และการพัฒนานวัตกรรมแห่งอนาคต"
+    };
+
+    const inputText = document.getElementById("inputText");
+    const charCount = document.getElementById("charCount");
+    inputText.addEventListener("input", () => {
+      charCount.textContent = `${inputText.value.length.toLocaleString()} / 5,000 ตัวอักษร`;
+    });
+
+    function setTagSample(index) {
+      inputText.value = tagSamples[index] || "";
+      charCount.textContent = `${inputText.value.length.toLocaleString()} / 5,000 ตัวอักษร`;
+    }
+
+    let currentTags = [];
+
+    async function analyzeTags() {
+      const text = inputText.value.trim();
+      const numtag = document.getElementById("numtag").value;
+      const apiKey = document.getElementById("tagApiKey").value.trim();
+
+      if (!text) {
+        alert("กรุณากรอกข้อความก่อนทำการวิเคราะห์");
+        inputText.focus();
+        return;
+      }
+
+      document.getElementById("tagPlaceholder").classList.add("hidden");
+      document.getElementById("tagResultsView").classList.add("hidden");
+      document.getElementById("tagError").classList.add("hidden");
+      document.getElementById("tagLoading").classList.remove("hidden");
+      document.getElementById("copyAllTagsBtn").style.display = "none";
+
+      const submitBtn = document.getElementById("tagSubmitBtn");
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+
+      try {
+        const response = await fetch("/api/suggest-tags", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, numtag, api_key: apiKey })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการประมวลผล");
+        displayTagResults(data);
+      } catch (err) {
+        document.getElementById("tagErrorMessage").textContent = err.message;
+        document.getElementById("tagError").classList.remove("hidden");
+      } finally {
+        document.getElementById("tagLoading").classList.add("hidden");
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+      }
+    }
+
+    function displayTagResults(data) {
+      const container = document.getElementById("tagsContainer");
+      container.innerHTML = "";
+      const tags = data.tags || [];
+      currentTags = tags.map(t => t.tag);
+
+      if (tags.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">ไม่พบแท็กที่เกี่ยวข้องสำหรับข้อความนี้</div>`;
+      } else {
+        tags.forEach((item, index) => {
+          const scorePercent = Math.min(100, Math.max(0, (item.score * 100).toFixed(1)));
+          const card = document.createElement("div");
+          card.className = "bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl p-3 transition flex flex-col gap-1.5";
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">
+                  ${index + 1}
+                </span>
+                <span class="font-medium text-slate-800 text-sm sm:text-base">${item.tag}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-500 font-mono">Score: ${Number(item.score).toFixed(4)}</span>
+                <button onclick="copyTag('${item.tag}', this)" title="คัดลอกแท็กนี้" class="p-1 text-slate-400 hover:text-indigo-600 rounded transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-indigo-500 to-blue-600 h-1.5 rounded-full" style="width: ${scorePercent}%"></div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+        document.getElementById("copyAllTagsBtn").style.display = "inline-flex";
+      }
+
+      document.getElementById("tagJsonViewer").textContent = JSON.stringify(data, null, 2);
+      document.getElementById("tagResultsView").classList.remove("hidden");
+    }
+
+    function copyTag(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<span class="text-[10px] text-emerald-600 font-semibold">คัดลอกแล้ว</span>`;
+        setTimeout(() => { btn.innerHTML = originalHtml; }, 1500);
+      });
+    }
+
+    function copyAllTags() {
+      if (currentTags.length === 0) return;
+      navigator.clipboard.writeText(currentTags.join(", ")).then(() => {
+        const btn = document.getElementById("copyAllTagsBtn");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `✓ คัดลอกสำเร็จ (${currentTags.length} แท็ก)`;
+        setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+      });
+    }
+
+    // ================= SERVICE 2: EMONEWS =================
+    const emoDict = {
+      joy: { th: "ดีใจ / เบิกบาน", emoji: "😄", color: "from-amber-400 to-yellow-500", textCol: "text-amber-600", bgCol: "bg-amber-50" },
+      pleasant: { th: "สบายใจ / พึงพอใจ", emoji: "😌", color: "from-emerald-400 to-green-500", textCol: "text-emerald-600", bgCol: "bg-emerald-50" },
+      surprise: { th: "ประหลาดใจ / ตกใจ", emoji: "😲", color: "from-cyan-400 to-blue-500", textCol: "text-blue-600", bgCol: "bg-blue-50" },
+      neutral: { th: "เป็นกลาง / ทั่วไป", emoji: "😐", color: "from-slate-400 to-slate-500", textCol: "text-slate-600", bgCol: "bg-slate-50" },
+      fear: { th: "หวาดกลัว / กังวล", emoji: "😨", color: "from-purple-500 to-indigo-600", textCol: "text-purple-600", bgCol: "bg-purple-50" },
+      sadness: { th: "เศร้า / เสียใจ", emoji: "😢", color: "from-blue-600 to-indigo-800", textCol: "text-indigo-700", bgCol: "bg-indigo-50" },
+      anger: { th: "โกรธ / ไม่พอใจ", emoji: "😡", color: "from-rose-500 to-red-600", textCol: "text-rose-600", bgCol: "bg-rose-50" }
+    };
+
+    const emoSamples = {
+      1: "นักวิจัยออสเตรเลียเผยสาเหตุฉลามโจมตีมนุษย์",
+      2: "ทีมชาติไทยโชว์ฟอร์มเยี่ยม เอาชนะคู่แข่งขาดลอย คว้าแชมป์มาครองได้อย่างสมศักดิ์ศรี แฟนบอลเฮลั่นทั้งสนาม",
+      3: "ชาวบ้านโอดครวญ ราคาน้ำมันและราคาสินค้าอุปโภคบริโภคปรับตัวสูงขึ้นต่อเนื่อง กระทบค่าครองชีพหนัก",
+      4: "กรมอุตุฯ ออกประกาศเตือนภัยพายุฤดูร้อนถล่ม 45 จังหวัด เสี่ยงน้ำท่วมฉับพลันและน้ำป่าไหลหลาก"
+    };
+
+    function setEmoSample(index) {
+      document.getElementById("emoInputText").value = emoSamples[index] || "";
+    }
+
+    async function analyzeEmotion() {
+      const text = document.getElementById("emoInputText").value.trim();
+      const apiKey = document.getElementById("emoApiKey").value.trim();
+
+      if (!text) {
+        alert("กรุณากรอกหัวข้อข่าวก่อนทำการวิเคราะห์");
+        document.getElementById("emoInputText").focus();
+        return;
+      }
+
+      document.getElementById("emoPlaceholder").classList.add("hidden");
+      document.getElementById("emoResultsView").classList.add("hidden");
+      document.getElementById("emoError").classList.add("hidden");
+      document.getElementById("emoLoading").classList.remove("hidden");
+
+      const submitBtn = document.getElementById("emoSubmitBtn");
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+
+      try {
+        const response = await fetch("/api/emonews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, api_key: apiKey })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "เกิดข้อผิดพลาดในการประมวลผล");
+        displayEmoResults(data);
+      } catch (err) {
+        document.getElementById("emoErrorMessage").textContent = err.message;
+        document.getElementById("emoError").classList.remove("hidden");
+      } finally {
+        document.getElementById("emoLoading").classList.add("hidden");
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+      }
+    }
+
+    function displayEmoResults(data) {
+      const container = document.getElementById("emotionsContainer");
+      container.innerHTML = "";
+
+      const result = data.result || {};
+      
+      // Sort emotions descending by score
+      const sortedEmotions = Object.keys(result).map(key => ({
+        key: key,
+        score: parseFloat(result[key]) || 0,
+        meta: emoDict[key] || { th: key, emoji: "🏷️", color: "from-blue-500 to-indigo-600", textCol: "text-slate-700", bgCol: "bg-slate-50" }
+      })).sort((a, b) => b.score - a.score);
+
+      if (sortedEmotions.length > 0) {
+        const top = sortedEmotions[0];
+        document.getElementById("dominantEmotionName").innerHTML = `${top.meta.emoji} ${top.meta.th} (${top.key})`;
+        document.getElementById("dominantEmotionScore").textContent = `${(top.score * 100).toFixed(1)}%`;
+      }
+
+      sortedEmotions.forEach(item => {
+        const scorePercent = (item.score * 100).toFixed(1);
+        const card = document.createElement("div");
+        card.className = "p-2.5 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100/80 transition flex flex-col gap-1.5";
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <span class="font-medium text-slate-800 flex items-center gap-1.5">
+              <span>${item.meta.emoji}</span>
+              <span>${item.meta.th}</span>
+              <span class="text-xs text-slate-400 capitalize">(${item.key})</span>
+            </span>
+            <span class="font-mono font-semibold ${item.score > 0.2 ? item.meta.textCol : 'text-slate-500'}">
+              ${scorePercent}% <span class="text-[10px] text-slate-400 font-normal">(${item.score.toFixed(4)})</span>
+            </span>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div class="bg-gradient-to-r ${item.meta.color} h-2 rounded-full transition-all duration-500" style="width: ${scorePercent}%"></div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById("emoJsonViewer").textContent = JSON.stringify(data, null, 2);
+      document.getElementById("emoResultsView").classList.remove("hidden");
+    }
+
+    // Toggle JSON Viewer
+    function toggleJson(viewerId, iconId) {
+      const viewer = document.getElementById(viewerId);
+      const icon = document.getElementById(iconId);
+      if (viewer.classList.contains("hidden")) {
+        viewer.classList.remove("hidden");
+        icon.textContent = "▲";
+      } else {
+        viewer.classList.add("hidden");
+        icon.textContent = "▼";
+      }
+    }
+  </script>
+</body>
+</html>
