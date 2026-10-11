@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>วิเคราะห์อารมณ์จากพาดหัวข่าว - Thai AI Intelligence Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0b1f3a;
+      --navy: #0b2a6b;
+      --ink-2: #16335c;
+      --red: #d7263d;
+      --red-dark: #b01c30;
+      --paper: #ffffff;
+      --card: #ffffff;
+      --rule: #d5dbe3;
+      --muted: #55657d;
+      --serif: 'Noto Serif Thai', 'Prompt', Georgia, serif;
+      --sans: 'Prompt', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1.25rem 2rem;
+    }
+
+    .container { width: 100%; max-width: 1080px; }
+
+    a { color: inherit; }
+
+    /* แถบธงไตรรงค์บางๆ ด้านบนสุด */
+    body::before {
+      content: ""; position: fixed; top: 0; left: 0; right: 0; height: 6px; z-index: 10;
+      background: linear-gradient(90deg, var(--red) 0 16.66%, #fff 16.66% 33.33%, var(--navy) 33.33% 66.66%, #fff 66.66% 83.33%, var(--red) 83.33% 100%);
+    }
+    :focus-visible { outline: 3px solid rgba(11, 31, 58, 0.4); outline-offset: 2px; }
+
+    /* ── Masthead ── */
+    header {
+      background: var(--navy);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(11, 31, 58, 0.18);
+    }
+    .masthead-body { padding: 1.75rem 2.25rem 2rem; }
+    .masthead-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .masthead-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--red); color: #fff;
+      font-size: 0.82rem; font-weight: 600;
+      padding: 0.2rem 0.8rem; border-radius: 4px;
+    }
+    .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+
+    .server-status {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; font-weight: 500; color: #dbe4f0;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 0.15rem 0.75rem; border-radius: 999px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+    .server-status[data-state="online"] .status-dot { background: #4ade80; }
+    .server-status[data-state="offline"] .status-dot { background: #fbbf24; }
+
+    .dateline { color: #aebbd0; font-size: 0.85rem; }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: 2.4rem; font-weight: 700; line-height: 1.4;
+      color: #fff; margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 1rem; max-width: 700px; margin-bottom: 1.5rem;
+    }
+    .subtitle b { color: #fff; font-weight: 600; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .btn-primary, .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 0.6rem 1.6rem;
+      border-radius: 10px; font-family: var(--sans);
+      font-size: 0.97rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-primary { background: var(--red); color: #fff; border: none; }
+    .btn-primary:hover { background: var(--red-dark); }
+    .btn-secondary { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; }
+
+    /* ── Ticker ── */
+    .ticker {
+      display: flex; align-items: stretch;
+      background: var(--red);
+      overflow: hidden;
+    }
+    .ticker-label {
+      background: #fff; color: var(--red);
+      font-weight: 600; font-size: 0.82rem;
+      padding: 0.5rem 1rem; white-space: nowrap; flex-shrink: 0;
+    }
+    .ticker-window { overflow: hidden; flex: 1; display: flex; align-items: center; }
+    .ticker-track {
+      display: inline-flex; white-space: nowrap;
+      animation: ticker-scroll 55s linear infinite;
+    }
+    .ticker-track span { color: #fff; font-size: 0.87rem; font-weight: 500; padding: 0 2rem; position: relative; }
+    .ticker-track span::after {
+      content: ""; position: absolute; right: 0; top: 50%;
+      width: 5px; height: 5px; margin-top: -2.5px;
+      background: #fff; border-radius: 50%;
+    }
+    @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+    /* ── Preview ── */
+    .preview-section {
+      display: none;
+      background: var(--card); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
+    }
+    .preview-header {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 0.9rem;
+    }
+    .preview-header h2 { color: var(--navy); font-family: var(--serif); font-size: 1.1rem; font-weight: 700; }
+    .preview-header a { font-size: 0.9rem; font-weight: 600; color: var(--red); text-decoration: none; }
+    .preview-header a:hover { text-decoration: underline; }
+    .iframe-wrapper {
+      width: 100%; height: 760px; max-height: 80vh;
+      border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: #fff;
+    }
+    iframe { width: 100%; height: 100%; border: none; }
+
+    /* ── Section cards ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem; margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--rule);
+      border-top: 5px solid var(--navy); border-radius: 10px;
+      padding: 1.5rem 1.6rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .card.accent { border-top-color: var(--red); }
+    .card h3 { color: var(--navy); font-family: var(--serif); font-size: 1.2rem; font-weight: 700; line-height: 1.5; margin-bottom: 0.4rem; }
+    .card p { color: var(--muted); font-size: 0.93rem; margin-bottom: 1rem; }
+    .card code {
+      background: #eef1f6; border-radius: 4px; padding: 0.05rem 0.4rem;
+      font-size: 0.88em; color: var(--ink);
+    }
+    .feature-list { list-style: none; margin-bottom: 1.25rem; }
+    .feature-list li {
+      font-size: 0.92rem; color: #243b5a;
+      padding-left: 1.4rem; position: relative; margin-bottom: 0.35rem;
+    }
+    .feature-list li::before {
+      content: ""; position: absolute; left: 0.2rem; top: 0.72em;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--red);
+    }
+    .card-link {
+      font-weight: 600; font-size: 0.93rem; text-decoration: none;
+      color: var(--ink); border-top: 1px solid var(--rule);
+      padding-top: 0.85rem; display: block;
+    }
+    .card-link:hover { color: var(--red); }
+
+    .command-box {
+      background: var(--navy); color: #e6ecf5;
+      border-radius: 10px; padding: 0.75rem 0.75rem 0.75rem 1rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      font-family: 'Courier New', Courier, monospace; font-size: 0.93rem;
+      margin-bottom: 0.9rem;
+    }
+    .btn-copy {
+      background: #fff; color: var(--ink); border: none;
+      padding: 0.35rem 0.9rem; border-radius: 6px;
+      font-family: var(--sans); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      flex-shrink: 0;
+    }
+    .btn-copy:hover { background: #e6ecf5; }
+    .note { font-size: 0.85rem; color: var(--muted); }
+
+    footer { text-align: center; color: var(--muted); font-size: 0.88rem; margin-top: auto; padding: 0.75rem 0; }
+
+    @media (max-width: 640px) {
+      .masthead-body { padding: 1.25rem 1.1rem 1.4rem; }
+      h1 { font-size: 1.6rem; }
+      .dateline { display: none; }
+      .btn-primary, .btn-secondary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="masthead-body">
+        <div class="masthead-top">
+          <div class="masthead-left">
+            <span class="badge">Thai AI Intelligence Hub</span>
+            <span class="server-status" id="serverStatus" data-state="checking" aria-live="polite">
+              <span class="status-dot"></span>
+              <span id="statusText">กำลังตรวจสอบเซิร์ฟเวอร์...</span>
+            </span>
+          </div>
+          <span class="dateline" id="dateline"></span>
+        </div>
+
+        <h1>วิเคราะห์อารมณ์จากพาดหัวข่าว</h1>
+        <p class="subtitle">
+          ตรวจจับอารมณ์จากข่าวภาษาไทยด้วย <b>AIForThai EmoNews</b> และสนทนาถาม-ตอบกับ <b>ThaiLLM Pathumma 3.0</b>
+        </p>
+
+        <div class="actions">
+          <a href="http://localhost:8501" target="_blank" rel="noopener" class="btn-primary" id="mainLaunchBtn">เปิดแอปวิเคราะห์ข่าว</a>
+          <button type="button" class="btn-secondary" id="toggleBtn" onclick="toggleIframe()">ดูตัวอย่างในหน้านี้</button>
+        </div>
+      </div>
+
+      <div class="ticker">
+        <div class="ticker-label">ข่าวตัวอย่าง</div>
+        <div class="ticker-window">
+          <div class="ticker-track" id="tickerTrack"></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="preview-section" id="previewSection">
+      <div class="preview-header">
+        <h2>ตัวอย่างหน้าแอป</h2>
+        <a href="http://localhost:8501" target="_blank" rel="noopener">เปิดแบบเต็มหน้าจอ</a>
+      </div>
+      <div class="iframe-wrapper">
+        <iframe id="appFrame" src="about:blank" title="ตัวอย่างแอป Streamlit"></iframe>
+      </div>
+    </section>
+
+    <div class="grid">
+      <div class="card accent">
+        <div>
+          <h3>AIForThai EmoNews</h3>
+          <p>ประเมินอารมณ์จากพาดหัวข่าวภาษาไทย พร้อมระดับความเชื่อมั่นของแต่ละอารมณ์</p>
+          <ul class="feature-list">
+            <li>แสดงอารมณ์เด่นของพาดหัวทันที</li>
+            <li>คะแนนความเชื่อมั่น (Confidence Score)</li>
+            <li>แท่งเปรียบเทียบทุกอารมณ์ เรียงจากมากไปน้อย</li>
+            <li>ปุ่มข่าวตัวอย่าง 4 หมวดให้ลองกดได้ทันที</li>
+          </ul>
+        </div>
+        <a class="card-link" href="http://localhost:8501" target="_blank" rel="noopener">ไปที่แท็บวิเคราะห์อารมณ์ข่าว &rarr;</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>ThaiLLM Pathumma 3.0</h3>
+          <p>โมเดลภาษาไทยที่ตอบคำถาม สรุปความ และช่วยเรียบเรียงข้อความได้อย่างเป็นธรรมชาติ</p>
+          <ul class="feature-list">
+            <li>ปรับค่าความสร้างสรรค์ (Temperature) ได้</li>
+            <li>แสดงคำตอบแบบ Markdown อ่านง่าย</li>
+            <li>ดูกระบวนการคิดของโมเดลได้เมื่อต้องการ</li>
+            <li>ปุ่มหัวข้อสนทนาตัวอย่างให้เลือกทันที</li>
+          </ul>
+        </div>
+        <a class="card-link" href="http://localhost:8501" target="_blank" rel="noopener">ไปที่แท็บสหายสนทนาปทุมมา &rarr;</a>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>เริ่มใช้งานและตั้งค่า API Keys</h3>
+          <p>ใส่คีย์ในไฟล์ <code>.env</code> หรือกรอกผ่านแถบด้านข้างของแอปได้เลย</p>
+          <div class="command-box">
+            <span id="cmdText">streamlit run app.py</span>
+            <button type="button" class="btn-copy" id="copyBtn" onclick="copyCommand()">คัดลอก</button>
+          </div>
+        </div>
+        <p class="note">หากปิดเซิร์ฟเวอร์ไปแล้ว สั่งรันใหม่จากโฟลเดอร์โปรเจกต์ด้วยคำสั่งด้านบน</p>
+      </div>
+    </div>
+
+    <footer>Thai AI Intelligence Hub &copy; 2026 &nbsp;ขับเคลื่อนด้วย AIForThai และ ThaiLLM Pathumma</footer>
+  </div>
+
+  <script>
+    const APP_URL = "http://localhost:8501";
+    const HEADLINES = [
+      "นักวิจัยไทยประสบความสำเร็จ ผลิตระบบกรองน้ำชีวภาพช่วยฟื้นฟูชุมชนริมแม่น้ำ",
+      "ทีมเยาวชนไทยคว้าแชมป์หุ่นยนต์กู้ภัยโลก สร้างชื่อเสียงกระหึ่มเวทีสากล",
+      "กรมอุตุฯ เตือนรับมือพายุดีเปรสชัน เสี่ยงน้ำท่วมฉับพลันและดินถล่ม 15 จังหวัด",
+      "นักลงทุนจับตาความไม่แน่นอนของเศรษฐกิจโลก ส่งผลตลาดหุ้นไทยปิดลบเล็กน้อย"
+    ];
+
+    // วันที่แบบไทย (พ.ศ.)
+    (function () {
+      const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+      const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+                      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+      const n = new Date();
+      document.getElementById("dateline").textContent =
+        "วัน" + days[n.getDay()] + "ที่ " + n.getDate() + " " + months[n.getMonth()] + " " + (n.getFullYear() + 543);
+    })();
+
+    // แถบข่าววิ่ง (ซ้ำสองชุดเพื่อให้วนต่อเนื่อง)
+    (function () {
+      const items = HEADLINES.map(t => "<span>" + t + "</span>").join("");
+      document.getElementById("tickerTrack").innerHTML = items + items;
+    })();
+
+    // ตรวจสอบสถานะเซิร์ฟเวอร์ Streamlit
+    async function checkServer() {
+      const box = document.getElementById("serverStatus");
+      const text = document.getElementById("statusText");
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2500);
+      try {
+        await fetch(APP_URL, { mode: "no-cors", signal: ctrl.signal });
+        box.dataset.state = "online";
+        text.textContent = "เซิร์ฟเวอร์ออนไลน์ (localhost:8501)";
+      } catch (err) {
+        box.dataset.state = "offline";
+        text.textContent = "ยังไม่พบเซิร์ฟเวอร์ ลองรัน streamlit run app.py";
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    checkServer();
+    setInterval(checkServer, 15000);
+
+    // สลับแสดงตัวอย่างในหน้านี้
+    let isIframeOpen = false;
+    function toggleIframe() {
+      const section = document.getElementById("previewSection");
+      const frame = document.getElementById("appFrame");
+      const btn = document.getElementById("toggleBtn");
+      isIframeOpen = !isIframeOpen;
+      if (isIframeOpen) {
+        frame.src = APP_URL;
+        section.style.display = "block";
+        btn.textContent = "ซ่อนตัวอย่าง";
+        section.scrollIntoView({ behavior: "smooth" });
+      } else {
+        section.style.display = "none";
+        frame.src = "about:blank";
+        btn.textContent = "ดูตัวอย่างในหน้านี้";
+      }
+    }
+
+    // คัดลอกคำสั่ง
+    function copyCommand() {
+      const text = document.getElementById("cmdText").textContent;
+      const btn = document.getElementById("copyBtn");
+      const done = ok => {
+        btn.textContent = ok ? "คัดลอกแล้ว" : "คัดลอกไม่สำเร็จ";
+        setTimeout(() => { btn.textContent = "คัดลอก"; }, 1800);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => done(true), () => done(false));
+      } else {
+        done(false);
+      }
+    }
+  </script>
+</body>
+</html>
