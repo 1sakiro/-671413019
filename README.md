@@ -8,8 +8,8 @@
 
 1. **Tab 1: AIForThai EmoNews (วิเคราะห์อารมณ์ข่าว)** 📊
    - กรอกหัวข้อข่าวภาษาไทยเพื่อประเมินอารมณ์ 7 รูปแบบ
-   - แสดงอารมณ์หลักด้วยการ์ด Metric
-   - แสดงกราฟแท่งเปรียบเทียบคะแนนความเชื่อมั่นของแต่ละอารมณ์ด้วย `st.bar_chart`
+   - แสดงอารมณ์หลักด้วยการ์ดใบข่าว พร้อมวงกลมแสดงความมั่นใจ
+   - แสดงแท่งเปรียบเทียบคะแนนของทุกอารมณ์ เรียงจากมากไปน้อย
    - ดูข้อมูลผลลัพธ์แบบ Raw JSON จาก API
    - Endpoint: `https://api.aiforthai.in.th/emonews/prediction` (GET)
    - Header: `apikey`
@@ -30,7 +30,8 @@
 
 ```text
 ├── app.py              # แอปพลิเคชัน Streamlit หลัก (EmoNews + ThaiLLM)
-├── requirements.txt    # รายการ Dependencies (streamlit, requests, pandas, python-dotenv)
+├── .streamlit/config.toml  # ธีมสว่างและซ่อนปุ่ม Deploy
+├── requirements.txt    # รายการ Dependencies (streamlit, requests, python-dotenv)
 ├── .env.example        # ไฟล์ตัวอย่างสำหรับการตั้งค่า API Keys
 ├── .gitignore          # ละเว้นไฟล์ที่ไม่ต้องการ commit ขึ้น Git
 └── README.md           # เอกสารคู่มือการติดตั้งและการใช้งาน
@@ -59,8 +60,8 @@ cp .env.example .env      # Linux / macOS
 ```
 กำหนดค่าคีย์ของคุณ:
 ```env
-AIFORTHAI_API_KEY=JI1yMBilkSsDnaM2ovkKcJ7BuUbcgZ0e
-THAILLM_API_KEY=gmFxQWdOIxSnMQjvKcUqJhuRkk5b3PEs
+AIFORTHAI_API_KEY=your_aiforthai_key_here
+THAILLM_API_KEY=your_thaillm_key_here
 ```
 
 ### 4. สั่งรันแอปพลิเคชัน
@@ -88,7 +89,7 @@ git push -u origin main
 2. เลือก Repository และ Branch: `main`, Main file path: `app.py`
 3. ในส่วน **Advanced settings -> Secrets** ระบุ:
    ```toml
-   AIFORTHAI_API_KEY = "JI1yMBilkSsDnaM2ovkKcJ7BuUbcgZ0e"
-   THAILLM_API_KEY = "gmFxQWdOIxSnMQjvKcUqJhuRkk5b3PEs"
+   AIFORTHAI_API_KEY = "your_aiforthai_key_here"
+   THAILLM_API_KEY = "your_thaillm_key_here"
    ```
 4. กด **Deploy!**
